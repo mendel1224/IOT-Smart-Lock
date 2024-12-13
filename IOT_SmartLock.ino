@@ -1,5 +1,7 @@
 #include <SPI.h>
 #include <MFRC522.h>
+#include <WiFi.h>
+#include <HttpClient.h>
 
 #define RST_PIN         5          
 #define SS_PIN          10         
