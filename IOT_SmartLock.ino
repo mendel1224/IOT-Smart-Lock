@@ -105,11 +105,11 @@ void loop() {
      // Calculate the number of rows in the authorizedTags array
     int numRows = sizeof(authorizedUIDs) / sizeof(authorizedUIDs[0]);
 
-    valid = validUID(mfrc522.uid.uidByte, authorizedUIDs, numRows); // Checks if card is valid
+    bool valid = validUID(mfrc522.uid.uidByte, authorizedUIDs, numRows); // Checks if card is valid
     String currentTime = getFormattedTime();       // Gets the current local time
     // String to store on AWS web page
     String val = String ("?authorized=") + String(valid) + String("&time=") + String(currentTime);
-    err = http.get("CHANGE TO IP ADDRESS AWS", 5000, val.c_str(), NULL);    // Sent to AWS
+    err = http.get("CHANGE TO IP ADDRESS AWS", 5000, val.c_str());    // Sent to AWS
      // Check if the scanned UID is valid
     if (valid)
     {
@@ -124,6 +124,14 @@ void loop() {
          delay(2000);  // Keep LED on for 2 seconds 
          digitalWrite(RED_LED_PIN, LOW);    // Turn off red LED
     }
+    // Checks if the data sent
+    if (err == 0) {
+        Serial.println("Data sent successfully.");
+    } else {
+        Serial.print("Error sending data: ");
+        Serial.println(err);
+    }
+
     // Halt the card
     mfrc522.PICC_HaltA();
 }
