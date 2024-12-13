@@ -11,6 +11,10 @@
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
+char ssid[50] = " ";
+char pass[50] = " ";
+
+
 byte authorizedUIDs[][4] = {
     {0x33, 0x37, 0x1D, 0x16}, // UID 1
 };
@@ -53,6 +57,17 @@ void setup() {
     while (!Serial);    // Do nothing if no serial port is opened
     SPI.begin();        // Init SPI bus
     mfrc522.PCD_Init(); // Init MFRC522
+    Serial.println();
+    Serial.print("Connecting to ");
+    Serial.println(ssid);
+    WiFi.begin(ssid, pass);
+    while (WiFi.status() != WL_CONNECTED)
+      {
+        delay(500);
+        Serial.print(".");
+      }
+    Serial.println("");
+    Serial.println("WiFi connected");
     delay(4);           // Optional delay
    // mfrc522.PCD_DumpVersionToSerial(); // Show details of PCD
 
