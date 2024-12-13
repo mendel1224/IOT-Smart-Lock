@@ -2,6 +2,7 @@
 #include <MFRC522.h>
 #include <WiFi.h>
 #include <HttpClient.h>
+#include <Time.h>
 
 #define RST_PIN         5          
 #define SS_PIN          10         
@@ -18,6 +19,10 @@ const char kHostname[] = "CHANGE TO YOUR AWS IP";
 const char kPath[] = "CHANGE TO YOUR PATH";
 const int kNetworkTimeout = 30 * 1000;    // Number of milliseconds to wait if no data is available before trying again
 const int kNetworkDelay = 1000;
+
+const char* ntpServer = "pool.ntp.org";   // NTP server
+const long gmtOffset_sec = -28800;        // UTC-8 for California
+const int daylightOffset_sec = 0;         // No daylight saving in December
 
 byte authorizedUIDs[][4] = {
     {0x33, 0x37, 0x1D, 0x16}, // UID 1
@@ -49,6 +54,16 @@ bool validUID(byte * scannedTag, byte authorizedTags[][4] , int numRows)
   // If all tags were checked and non matched the scanned in tag, the tag is not authorized
   return false;
 }
+// Function to print the current time when called
+String getFormattedTime() {
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo)) {
+    return "FAILED"; // Default time if synchronization fails
+  }
+  char timeString[25];
+  strftime(timeString, sizeof(timeString), "%Y-%m-%dT%H:%M:%S", &timeinfo); 
+  return String(timeString);
+}
 
 void setup() {
     Serial.begin(9600); // Initialize serial communications with the PC
@@ -65,6 +80,8 @@ void setup() {
       }
     Serial.println("");
     Serial.println("WiFi connected");
+
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
    // mfrc522.PCD_DumpVersionToSerial(); // Show details of PCD
 
       // Set LED pins as output
@@ -85,19 +102,17 @@ void loop() {
     if (!mfrc522.PICC_ReadCardSerial()) {
         return;
     }
-
      // Calculate the number of rows in the authorizedTags array
     int numRows = sizeof(authorizedUIDs) / sizeof(authorizedUIDs[0]);
 
-    valid = validUID(mfrc522.uid.uidByte, authorizedUIDs, numRows);
-
+    valid = validUID(mfrc522.uid.uidByte, authorizedUIDs, numRows); // Checks if card is valid
+    String currentTime = getFormattedTime();       // Gets the current local time
     // String to store on AWS web page
-    String val = String ("?authorized=") + String(valid) + String("&time=") + String(time) + String("&uid=") + String(mfrc.522.uid.uid.byte);
-    err = http.get("CHANGE TO IP ADDRESS AWS", 5000, val.c_str(), NULL);
+    String val = String ("?authorized=") + String(valid) + String("&time=") + String(currentTime);
+    err = http.get("CHANGE TO IP ADDRESS AWS", 5000, val.c_str(), NULL);    // Sent to AWS
      // Check if the scanned UID is valid
     if (valid)
     {
-        
         Serial.println("Authorized");
         digitalWrite(GREEN_LED_PIN, HIGH);  // Turn on green LED
         delay(2000);  // Keep LED on for 2 seconds 
@@ -109,10 +124,6 @@ void loop() {
          delay(2000);  // Keep LED on for 2 seconds 
          digitalWrite(RED_LED_PIN, LOW);    // Turn off red LED
     }
-
-    
-    
-  
     // Halt the card
     mfrc522.PICC_HaltA();
 }
