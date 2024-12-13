@@ -14,6 +14,10 @@ MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 char ssid[50] = " ";
 char pass[50] = " ";
 
+const char kHostname[] = "13.56.253.10:5000";
+const char kPath[] = " ";
+const int kNetworkTimeout = 30 * 1000;    // Number of milliseconds to wait if no data is available before trying again
+const int kNetworkDelay = 1000;
 
 byte authorizedUIDs[][4] = {
     {0x33, 0x37, 0x1D, 0x16}, // UID 1
@@ -57,10 +61,9 @@ void setup() {
     while (!Serial);    // Do nothing if no serial port is opened
     SPI.begin();        // Init SPI bus
     mfrc522.PCD_Init(); // Init MFRC522
-    Serial.println();
     Serial.print("Connecting to ");
     Serial.println(ssid);
-    WiFi.begin(ssid, pass);
+    WiFi.begin(ssid, pass);    // Attempts to connect to WiFi
     while (WiFi.status() != WL_CONNECTED)
       {
         delay(500);
@@ -68,7 +71,6 @@ void setup() {
       }
     Serial.println("");
     Serial.println("WiFi connected");
-    delay(4);           // Optional delay
    // mfrc522.PCD_DumpVersionToSerial(); // Show details of PCD
 
       // Set LED pins as output
