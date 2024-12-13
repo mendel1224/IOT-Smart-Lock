@@ -4,6 +4,9 @@
 #define RST_PIN         5          
 #define SS_PIN          10         
 
+#define GREEN_LED_PIN   7          // Green LED pin
+#define RED_LED_PIN     8          // Red LED pin
+
 MFRC522 mfrc522(SS_PIN, RST_PIN);  // Create MFRC522 instance
 
 byte authorizedUIDs[][4] = {
@@ -50,6 +53,12 @@ void setup() {
     mfrc522.PCD_Init(); // Init MFRC522
     delay(4);           // Optional delay
    // mfrc522.PCD_DumpVersionToSerial(); // Show details of PCD
+
+      // Set LED pins as output
+    pinMode(GREEN_LED_PIN, OUTPUT);
+    pinMode(RED_LED_PIN, OUTPUT);
+
+    
    
 }
 
@@ -67,16 +76,23 @@ void loop() {
      // Calculate the number of rows in the authorizedTags array
     int numRows = sizeof(authorizedUIDs) / sizeof(authorizedUIDs[0]);
 
-     
-      if (validUID(mfrc522.uid.uidByte, authorizedUIDs, numRows)) 
-        {
-
+     // Check if the scanned UID is valid
+    if (validUID(mfrc522.uid.uidByte, authorizedUIDs, numRows))
+    {
         Serial.println("Authorized");
-   } 
-   else {
+        digitalWrite(GREEN_LED_PIN, HIGH);  // Turn on green LED
+        delay(2000);  // Keep LED on for 2 seconds 
+        digitalWrite(GREEN_LED_PIN, LOW); // Turn off green LED
+    } 
+    else {
         Serial.println("Unauthorized");
+        digitalWrite(RED_LED_PIN, HIGH);   // Turn on red LED
+         delay(2000);  // Keep LED on for 2 seconds 
+         digitalWrite(RED_LED_PIN, LOW);    // Turn off red LED
     }
 
+    
+    
   
     // Halt the card
     mfrc522.PICC_HaltA();
