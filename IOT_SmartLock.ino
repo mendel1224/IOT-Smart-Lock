@@ -109,7 +109,7 @@ void loop() {
     String currentTime = getFormattedTime();       // Gets the current local time
     // String to store on AWS web page
     String val = String ("?authorized=") + String(valid) + String("&time=") + String(currentTime);
-    err = http.get("CHANGE TO IP ADDRESS AWS", 5000, val.c_str());    // Sent to AWS
+    err = http.POST("CHANGE TO IP ADDRESS AWS", 5000, val.c_str());    // Sent to AWS
      // Check if the scanned UID is valid
     if (valid)
     {
